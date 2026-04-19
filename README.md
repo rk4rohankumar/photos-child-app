@@ -34,6 +34,16 @@ This repository contains the **Photos Child App**, designed as a microfrontend i
    yarn install
    ```
 
+3. Configure environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   Open `.env` and replace `YOUR_KEY_HERE` with a real Unsplash API access key
+   (get one at https://unsplash.com/developers). The app reads
+   `REACT_APP_UNSPLASH_ACCESS_KEY` at runtime; if it is missing the UI will
+   surface an explicit error. `.env` is gitignored — do not commit your key.
+   Restart the dev server after editing `.env`.
+
 ### Running the Application
 To start the development server:
 ```bash
