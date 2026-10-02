@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
+import ExternalLink from "./ExternalLink";
+import { onImageError, photoAlt, withUtm } from "../lib/photo";
 
 const PhotoCard = ({ photo, onOpen }) => {
   const reduced = usePrefersReducedMotion();
@@ -12,11 +14,7 @@ const PhotoCard = ({ photo, onOpen }) => {
         transition: { duration: 0.3 },
       };
 
-  const srcSet = [
-    `${photo.urls.small} 400w`,
-    `${photo.urls.regular} 1080w`,
-    `${photo.urls.full} 2000w`,
-  ].join(", ");
+  const alt = photoAlt(photo);
 
   return (
     <Wrapper
@@ -25,30 +23,43 @@ const PhotoCard = ({ photo, onOpen }) => {
     >
       <button
         type="button"
-        onClick={() => onOpen(photo)}
-        className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
-        aria-label={`Open ${photo.alt_description || "photo"} in lightbox`}
+        onClick={(e) => onOpen(photo, e.currentTarget)}
+        className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        aria-label={`Open "${alt}" in lightbox`}
       >
         <img
-          src={photo.urls.regular}
-          srcSet={srcSet}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          alt={photo.alt_description || "Unsplash photo"}
+          src={photo.urls.small}
+          srcSet={`${photo.urls.small} 400w, ${photo.urls.regular} 1080w`}
+          sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 768px) 50vw, 352px"
+          alt={alt}
+          width={photo.width}
+          height={photo.height}
           loading="lazy"
           decoding="async"
-          className="w-full h-64 object-cover"
+          onError={onImageError}
+          className="w-full h-64 object-cover bg-gray-100"
         />
       </button>
-      <div className="p-4">
-        <p className="text-sm text-gray-600">Photo by {photo.user.name}</p>
-        <a
-          href={photo.links.html}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 text-sm hover:underline mt-2 inline-block focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+      <div className="p-4 text-sm">
+        <p className="text-gray-700">
+          Photo by{" "}
+          {photo.user?.links?.html ? (
+            <ExternalLink
+              href={withUtm(photo.user.links.html)}
+              className="font-medium text-gray-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+            >
+              {photo.user.name}
+            </ExternalLink>
+          ) : (
+            <span className="font-medium text-gray-900">{photo.user?.name}</span>
+          )}
+        </p>
+        <ExternalLink
+          href={withUtm(photo.links.html)}
+          className="text-blue-700 hover:underline mt-2 inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
         >
           View on Unsplash
-        </a>
+        </ExternalLink>
       </div>
     </Wrapper>
   );

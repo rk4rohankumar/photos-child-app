@@ -1,110 +1,40 @@
-# Photos Child App Microfrontend
+# Photos · Micro Frontend remote
 
-This repository contains the **Photos Child App**, designed as a microfrontend in a larger application architecture. It is built using **React**, **Tailwind CSS**, and the **Module Federation Plugin** for Webpack, and configured with **CRACO** for custom configuration.
+Unsplash photo browser (latest + search, pagination, keyboard-accessible lightbox) built as a webpack Module Federation remote for the [micro-frontend host](https://github.com/rk4rohankumar/micro-frontend-host). Runs standalone too.
 
-## Features
-- Developed as a microfrontend for seamless integration with a parent application.
-- Built with modern technologies like React and Tailwind CSS.
-- Module Federation for dynamic sharing of code between apps.
-- Responsive and optimized for performance.
+CRA 5 + CRACO 7, React 19, Tailwind 3, axios, framer-motion.
 
-## Tech Stack
-- **React**: Frontend library for building user interfaces.
-- **Tailwind CSS**: Utility-first CSS framework for styling.
-- **CRACO (Create React App Configuration Override)**: For extending CRA configuration.
-- **Webpack Module Federation**: For microfrontend architecture.
+## API and key
 
-## Project Setup
+Data comes from the [Unsplash API](https://unsplash.com/documentation) (`https://api.unsplash.com`): `/photos` for the feed and `/search/photos` for queries, authenticated with `Authorization: Client-ID <key>`.
 
-### Prerequisites
-- Node.js (>= 14.x)
-- npm or yarn package manager
-
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/rk4rohankumar/photos-child-app.git
-   cd photos-child-app
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. Configure environment variables:
-   ```bash
-   cp .env.example .env
-   ```
-   Open `.env` and replace `YOUR_KEY_HERE` with a real Unsplash API access key
-   (get one at https://unsplash.com/developers). The app reads
-   `REACT_APP_UNSPLASH_ACCESS_KEY` at runtime; if it is missing the UI will
-   surface an explicit error. `.env` is gitignored — do not commit your key.
-   Restart the dev server after editing `.env`.
-
-### Running the Application
-To start the development server:
 ```bash
-npm start
-# or
-yarn start
+cp .env.example .env   # set REACT_APP_UNSPLASH_ACCESS_KEY
 ```
-The app will be accessible at [http://localhost:3000](http://localhost:3000).
 
-### Building for Production
-To create a production build:
+Get a key at <https://unsplash.com/developers>. Demo keys are limited to 50 requests/hour; the UI shows explicit states for a missing key, 401 and 403. `.env` is gitignored.
+
+## Run / build
+
 ```bash
-npm run build
-# or
-yarn build
+npm install
+npm start            # http://localhost:3000 (CRA picks another port if busy)
+npm run build        # production bundle in build/, remoteEntry.js at its root
 ```
 
-### Configuration Details
-#### CRACO and Webpack
-The project uses **CRACO** to customize the Webpack configuration for supporting Module Federation:
-- **publicPath**: Set to `https://photos-child-app.vercel.app/` for deployment.
-- **Module Federation Plugin**:
-  - Name: `PhotosApp`
-  - Remote Entry: `remoteEntry.js`
-  - Exposes: `./PhotosApp` from `./src/App`
-  - Shared Dependencies: `react`, `react-dom`, and `tailwindcss`
+## How the host consumes it
 
-### Deployment
-The app is deployed at: [https://photos-child-app.vercel.app/](https://photos-child-app.vercel.app/)
+- Scope: `PhotosApp`, remote entry: `https://photos-child-app.vercel.app/remoteEntry.js`
+- Exposed module: `./PhotosApp` → `src/App` (default export, a self-contained React component)
+- The host injects `remoteEntry.js` at runtime, calls `container.init(__webpack_share_scopes__.default)` then `container.get('./PhotosApp')`.
+- `output.publicPath` is `'auto'` in production, so chunks and CSS resolve relative to wherever `remoteEntry.js` was loaded from.
 
-## Microfrontend Integration
-To consume this microfrontend in a parent application, include the following in your Module Federation configuration:
-```javascript
-new ModuleFederationPlugin({
-  remotes: {
-    PhotosApp: 'PhotosApp@https://photos-child-app.vercel.app/remoteEntry.js',
-  },
-})
-```
+`src/index.js` is an async boundary (`import('./bootstrap')`) so webpack can negotiate shared modules before React is evaluated.
 
-## Scripts
-- `start`: Starts the development server.
-- `build`: Builds the app for production.
-- `test`: Runs tests.
-- `eject`: Ejects the CRA configuration.
+### Shared singletons
 
-## Folder Structure
-```
-photos-child-app/
-├── src/
-│   ├── components/   # Reusable components
-│   ├── App.js         # Main App component
-│   └── index.js       # Entry point
-├── public/            # Static files
-├── craco.config.js    # Custom configuration for Webpack
-└── package.json       # Project metadata and dependencies
-```
+`react`, `react-dom`, `framer-motion` and `axios` are declared `singleton: true` with `requiredVersion` from `package.json`. The host must provide compatible versions (React 19); a mismatch is reported by webpack in the console rather than silently loading two Reacts.
 
-## Contribution Guidelines
-Feel free to fork the repository and submit pull requests for any enhancements or bug fixes.
+## Deployment
 
-## License
-This project is licensed under the [MIT License](LICENSE).
-
+Vercel: <https://photos-child-app.vercel.app/>

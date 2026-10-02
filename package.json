@@ -1,6 +1,7 @@
 {
   "name": "photos",
   "version": "0.1.0",
+  "description": "Photos remote for the micro-frontend host: Unsplash browser and search with an accessible lightbox, exposed as ./PhotosApp via webpack Module Federation.",
   "private": true,
   "dependencies": {
     "@craco/craco": "^7.1.0",

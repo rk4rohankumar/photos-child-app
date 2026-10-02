@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import 'tailwindcss/tailwind.css';
+import "tailwindcss/tailwind.css";
 
 import Loader from "./components/Loader";
 import ErrorState from "./components/ErrorState";
@@ -10,6 +10,7 @@ import PhotoCard from "./components/PhotoCard";
 import Lightbox from "./components/Lightbox";
 import useDebouncedValue from "./hooks/useDebouncedValue";
 
+const API = "https://api.unsplash.com";
 const PER_PAGE = 12;
 
 const PhotosPage = () => {
@@ -24,22 +25,29 @@ const PhotosPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selected, setSelected] = useState(null);
+  const openerRef = useRef(null);
 
   const debouncedQuery = useDebouncedValue(searchTerm, 400);
 
   const fetchPhotos = useCallback(
-    async (query, pageNum) => {
+    async (query, pageNum, signal) => {
       if (keyMissing) return;
       setLoading(true);
       setError(null);
       const trimmed = (query || "").trim();
-      const url = trimmed
-        ? `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
-            trimmed
-          )}&page=${pageNum}&per_page=${PER_PAGE}&client_id=${accessKey}`
-        : `https://api.unsplash.com/photos?page=${pageNum}&per_page=${PER_PAGE}&client_id=${accessKey}`;
+      const url = trimmed ? `${API}/search/photos` : `${API}/photos`;
+      const params = trimmed
+        ? { query: trimmed, page: pageNum, per_page: PER_PAGE }
+        : { page: pageNum, per_page: PER_PAGE };
       try {
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+          params,
+          signal,
+          headers: {
+            Authorization: `Client-ID ${accessKey}`,
+            "Accept-Version": "v1",
+          },
+        });
         if (trimmed) {
           setPhotos(response.data.results || []);
           setTotalPages(response.data.total_pages || 1);
@@ -49,12 +57,19 @@ const PhotosPage = () => {
           setTotalPages(10);
         }
       } catch (err) {
+        if (axios.isCancel(err)) return;
         const status = err?.response?.status;
         if (status === 401) {
           setError({
             title: "Unauthorized (401)",
             message: "Your Unsplash access key was rejected.",
             hint: "Set REACT_APP_UNSPLASH_ACCESS_KEY in .env and restart the dev server.",
+          });
+        } else if (status === 403) {
+          setError({
+            title: "Rate limit reached (403)",
+            message: "The Unsplash API rate limit for this key has been exhausted.",
+            hint: "Demo keys allow 50 requests per hour. Wait a bit and try again.",
           });
         } else {
           setError({
@@ -65,7 +80,7 @@ const PhotosPage = () => {
         }
         setPhotos([]);
       } finally {
-        setLoading(false);
+        if (!signal?.aborted) setLoading(false);
       }
     },
     [accessKey, keyMissing]
@@ -77,7 +92,9 @@ const PhotosPage = () => {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    fetchPhotos(debouncedQuery, page);
+    const controller = new AbortController();
+    fetchPhotos(debouncedQuery, page, controller.signal);
+    return () => controller.abort();
   }, [debouncedQuery, page, fetchPhotos]);
 
   const onSubmit = (e) => {
@@ -85,6 +102,13 @@ const PhotosPage = () => {
     setPage(1);
     fetchPhotos(searchTerm, 1);
   };
+
+  const openLightbox = useCallback((photo, opener) => {
+    openerRef.current = opener || null;
+    setSelected(photo);
+  }, []);
+
+  const closeLightbox = useCallback(() => setSelected(null), []);
 
   const resultsMessage = useMemo(() => {
     if (loading) return "Loading photos...";
@@ -97,20 +121,24 @@ const PhotosPage = () => {
 
   if (keyMissing) {
     return (
-      <main className="max-w-6xl mx-auto p-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Stunning Photos</h1>
+      <section aria-labelledby="photos-heading" className="max-w-6xl mx-auto p-4">
+        <h1 id="photos-heading" className="text-3xl font-bold text-center mb-6">
+          Stunning Photos
+        </h1>
         <ErrorState
           title="Unsplash access key is missing"
           message="The REACT_APP_UNSPLASH_ACCESS_KEY environment variable is not set."
           hint="Copy .env.example to .env, set REACT_APP_UNSPLASH_ACCESS_KEY, and restart the dev server."
         />
-      </main>
+      </section>
     );
   }
 
   return (
-    <main className="max-w-6xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-6">Stunning Photos</h1>
+    <section aria-labelledby="photos-heading" className="max-w-6xl mx-auto p-4">
+      <h1 id="photos-heading" className="text-3xl font-bold text-center mb-6">
+        Stunning Photos
+      </h1>
 
       <form
         role="search"
@@ -124,14 +152,14 @@ const PhotosPage = () => {
           id="photo-search"
           type="search"
           placeholder="Search photos..."
-          className="p-2 border border-gray-300 rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="p-2 border border-gray-400 rounded-md w-64 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           autoComplete="off"
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
         >
           Search
         </button>
@@ -153,15 +181,13 @@ const PhotosPage = () => {
         <EmptyState query={debouncedQuery} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 list-none p-0 m-0">
             {photos.map((photo) => (
-              <PhotoCard
-                key={photo.id}
-                photo={photo}
-                onOpen={setSelected}
-              />
+              <li key={photo.id}>
+                <PhotoCard photo={photo} onOpen={openLightbox} />
+              </li>
             ))}
-          </div>
+          </ul>
           <Pagination
             page={page}
             totalPages={totalPages}
@@ -171,8 +197,12 @@ const PhotosPage = () => {
         </>
       )}
 
-      <Lightbox photo={selected} onClose={() => setSelected(null)} />
-    </main>
+      <Lightbox
+        photo={selected}
+        opener={openerRef.current}
+        onClose={closeLightbox}
+      />
+    </section>
   );
 };
 
