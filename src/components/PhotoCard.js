@@ -18,7 +18,7 @@ const PhotoCard = ({ photo, onOpen }) => {
 
   return (
     <Wrapper
-      className="rounded-lg overflow-hidden shadow-md bg-white"
+      className="rounded-[var(--mfe-radius,12px)] overflow-hidden shadow-sm bg-[var(--mfe-surface,#ffffff)]"
       {...motionProps}
     >
       <button
@@ -37,26 +37,26 @@ const PhotoCard = ({ photo, onOpen }) => {
           loading="lazy"
           decoding="async"
           onError={onImageError}
-          className="w-full h-64 object-cover bg-gray-100"
+          className="w-full h-64 object-cover bg-[var(--mfe-sunken,#f8fafc)]"
         />
       </button>
       <div className="p-4 text-sm">
-        <p className="text-gray-700">
+        <p className="text-[color:var(--mfe-muted,#475569)]">
           Photo by{" "}
           {photo.user?.links?.html ? (
             <ExternalLink
               href={withUtm(photo.user.links.html)}
-              className="font-medium text-gray-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+              className="font-medium text-[color:var(--mfe-ink,#0f172a)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
             >
               {photo.user.name}
             </ExternalLink>
           ) : (
-            <span className="font-medium text-gray-900">{photo.user?.name}</span>
+            <span className="font-medium text-[color:var(--mfe-ink,#0f172a)]">{photo.user?.name}</span>
           )}
         </p>
         <ExternalLink
           href={withUtm(photo.links.html)}
-          className="text-blue-700 hover:underline mt-2 inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+          className="text-[color:var(--mfe-accent,#047857)] hover:underline mt-2 inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
         >
           View on Unsplash
         </ExternalLink>

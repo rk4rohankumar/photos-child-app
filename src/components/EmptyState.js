@@ -1,6 +1,6 @@
 const EmptyState = ({ query }) => (
   <div
-    className="text-center py-16 text-gray-600"
+    className="text-center py-16 text-[color:var(--mfe-muted,#475569)]"
     role="status"
     aria-live="polite"
   >

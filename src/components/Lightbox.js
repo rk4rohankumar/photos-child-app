@@ -65,13 +65,13 @@ const Lightbox = ({ photo, opener, onClose }) => {
       onClick={onBackdrop}
       className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
     >
-      <div className="relative max-w-5xl w-full max-h-full overflow-auto bg-white rounded-lg shadow-xl">
+      <div className="relative max-w-5xl w-full max-h-full overflow-auto bg-[var(--mfe-surface,#ffffff)] rounded-[var(--mfe-radius,12px)] shadow-xl">
         <button
           ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="Close lightbox"
-          className="absolute top-2 right-2 z-10 bg-white/90 hover:bg-white text-gray-800 rounded-full w-9 h-9 flex items-center justify-center shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+          className="absolute top-2 right-2 z-10 bg-white/90 hover:bg-white text-[color:var(--mfe-ink,#0f172a)] rounded-full w-9 h-9 flex items-center justify-center shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
         >
           <span aria-hidden="true">&times;</span>
         </button>
@@ -88,12 +88,12 @@ const Lightbox = ({ photo, opener, onClose }) => {
           <h2 id="lightbox-title" className="sr-only">
             {alt}
           </h2>
-          <p className="text-gray-700">
+          <p className="text-[color:var(--mfe-muted,#475569)]">
             Photo by{" "}
             {photo.user?.links?.html ? (
               <ExternalLink
                 href={withUtm(photo.user.links.html)}
-                className="font-medium text-gray-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+                className="font-medium text-[color:var(--mfe-ink,#0f172a)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
               >
                 {photo.user.name}
               </ExternalLink>
@@ -104,14 +104,14 @@ const Lightbox = ({ photo, opener, onClose }) => {
           <div className="mt-2 flex gap-4">
             <ExternalLink
               href={withUtm(photo.links.html)}
-              className="text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+              className="text-[color:var(--mfe-accent,#047857)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
             >
               View on Unsplash
             </ExternalLink>
             {photo.links.download && (
               <ExternalLink
                 href={photo.links.download}
-                className="text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+                className="text-[color:var(--mfe-accent,#047857)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
               >
                 Download
               </ExternalLink>
