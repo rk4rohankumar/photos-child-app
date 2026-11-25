@@ -122,7 +122,8 @@ const PhotosPage = () => {
   if (keyMissing) {
     return (
       <section aria-labelledby="photos-heading" className="max-w-6xl mx-auto p-4">
-        <h1 id="photos-heading" className="text-3xl font-bold text-center mb-6">
+        <p className="text-xs font-medium uppercase tracking-widest text-[color:var(--mfe-accent,#047857)]">Photos remote</p>
+        <h1 id="photos-heading" className="mt-1 mb-6 text-2xl font-semibold text-[color:var(--mfe-ink,#0f172a)]">
           Stunning Photos
         </h1>
         <ErrorState
@@ -136,7 +137,8 @@ const PhotosPage = () => {
 
   return (
     <section aria-labelledby="photos-heading" className="max-w-6xl mx-auto p-4">
-      <h1 id="photos-heading" className="text-3xl font-bold text-center mb-6">
+      <p className="text-xs font-medium uppercase tracking-widest text-[color:var(--mfe-accent,#047857)]">Photos remote</p>
+      <h1 id="photos-heading" className="mt-1 mb-6 text-2xl font-semibold text-[color:var(--mfe-ink,#0f172a)]">
         Stunning Photos
       </h1>
 
@@ -152,14 +154,14 @@ const PhotosPage = () => {
           id="photo-search"
           type="search"
           placeholder="Search photos..."
-          className="p-2 border border-gray-400 rounded-md w-64 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className="p-2 border border-gray-400 rounded-md w-64 text-[color:var(--mfe-ink,#0f172a)] focus:outline-none focus:ring-2 focus:ring-blue-600"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           autoComplete="off"
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          className="bg-[var(--mfe-accent,#047857)] text-white px-4 py-2 rounded-md hover:bg-[var(--mfe-accent-ink,#065f46)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
         >
           Search
         </button>
